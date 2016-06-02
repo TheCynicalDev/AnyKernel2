@@ -38,6 +38,15 @@ bb=/tmp/anykernel/tools/busybox;
 
 ui_print "$(file_getprop /tmp/anykernel/anykernel.sh kernel.string)";
 ui_print " ";
+ui_print " ";
+ui_print "**************************************";
+ui_print " ";
+ui_print "              PhanTom Kernel          ";
+ui_print "--------------------------------------";
+ui_print "                   -R7                ";
+ui_print " ";
+ui_print "**************************************";
+ui_print " ";
 ui_print "AnyKernel2 by osm0sis @ xda-developers";
 ui_print " ";
 mount -o ro /system;

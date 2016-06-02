@@ -14,7 +14,7 @@ ui_print() {
 }
 show_progress() { echo "progress $1 $2" > $OUTFD; }
 set_perm_recursive() {
-  dirs=$(echo $* | $bb awk '{ print substr($0, index($0,$5)) }');
+  dirs=$(echo $* | awk '{ print substr($0, index($0,$5)) }');
   for i in $dirs; do
     chown -R $1.$2 $i; chown -R $1:$2 $i;
     find "$i" -type d -exec chmod $3 {} +;
@@ -27,21 +27,28 @@ abort() { ui_print "$*"; umount /system; umount /data; exit 1; }
 
 show_progress 1.34 4;
 ui_print " ";
-mkdir -p /tmp/anykernel/bin;
+mkdir -p /tmp/anykernel;
 cd /tmp/anykernel;
 unzip -o "$ZIP";
-if [ $? != 0 -o -z "$(ls /tmp/anykernel/tools)" ]; then
+if [ $? != 0 -o -z "$(ls /tmp/anykernel)" ]; then
   abort "Unzip failed. Aborting...";
 fi;
-chmod -R 755 /tmp/anykernel/tools /tmp/anykernel/bin;
-bb=/tmp/anykernel/tools/busybox;
 
 ui_print "$(file_getprop /tmp/anykernel/anykernel.sh kernel.string)";
 ui_print " ";
+ui_print " ";
+ui_print "**************************************";
+ui_print " ";
+ui_print "              PhanTom Kernel          ";
+ui_print "--------------------------------------";
+ui_print "                   -R7                ";
+ui_print " ";
+ui_print "**************************************";
+ui_print " ";
 ui_print "AnyKernel2 by osm0sis @ xda-developers";
 ui_print " ";
-mount -o ro /system;
-mount /data;
+/sbin/busybox mount -o ro /system;
+/sbin/busybox mount /data;
 
 if [ "$(file_getprop /tmp/anykernel/anykernel.sh do.devicecheck)" == 1 ]; then
   ui_print "Checking device...";
@@ -61,20 +68,14 @@ fi;
 if [ "$(file_getprop /tmp/anykernel/anykernel.sh do.initd)" == 1 ]; then
   ui_print "Creating init.d...";
   ui_print " ";
-  mount -o remount,rw /system;
+  /sbin/busybox mount -o remount,rw /system;
   mkdir /system/etc/init.d;
   set_perm_recursive 0 0 0755 0755 /system/etc/init.d;
-  mount -o remount,ro /system;
+  /sbin/busybox mount -o remount,ro /system;
 fi;
 
 ui_print "Installing kernel...";
-for i in $($bb --list); do
-  $bb ln -s $bb /tmp/anykernel/bin/$i;
-done;
-if [ $? != 0 -o -z "$(ls /tmp/anykernel/bin)" ]; then
-  abort "Recovery busybox setup failed. Aborting...";
-fi;
-PATH="/tmp/anykernel/bin:$PATH" $bb ash /tmp/anykernel/anykernel.sh $2;
+/sbin/sh /tmp/anykernel/anykernel.sh $2;
 if [ $? != "0" ]; then
   abort;
 fi;
@@ -82,10 +83,10 @@ fi;
 if [ "$(file_getprop /tmp/anykernel/anykernel.sh do.modules)" == 1 ]; then
   ui_print " ";
   ui_print "Pushing modules...";
-  mount -o remount,rw /system;
+  /sbin/busybox mount -o remount,rw /system;
   cp -rf /tmp/anykernel/modules/* /system/lib/modules/;
   set_perm_recursive 0 0 0755 0644 /system/lib/modules;
-  mount -o remount,ro /system;
+  /sbin/busybox mount -o remount,ro /system;
 fi;
 
 if [ "$(file_getprop /tmp/anykernel/anykernel.sh do.cleanup)" == 1 ]; then

@@ -3,19 +3,19 @@
 
 ## AnyKernel setup
 # EDIFY properties
-kernel.string=DirtyV by bsmitty83 @ xda-developers
+kernel.string=PhanTom Kernel by hemantbeast @ xda-developers
 do.devicecheck=1
 do.initd=1
-do.modules=0
+do.modules=1
 do.cleanup=1
-device.name1=maguro
-device.name2=toro
-device.name3=toroplus
+device.name1=armani
+device.name2=
+device.name3=
 device.name4=
 device.name5=
 
 # shell variables
-block=/dev/block/platform/omap/omap_hsmmc.0/by-name/boot;
+block=/dev/block/platform/msm_sdcc.1/by-name/boot;
 
 ## end setup
 
@@ -31,12 +31,7 @@ chmod -R 755 $bin;
 mkdir -p $ramdisk $split_img;
 
 OUTFD=/proc/self/fd/$1;
-
-# ui_print <text>
 ui_print() { echo -e "ui_print $1\nui_print" > $OUTFD; }
-
-# contains <string> <substring>
-contains() { test "${1#*$2}" != "$1" && return 0 || return 1; }
 
 # dump boot and extract ramdisk
 dump_boot() {
@@ -59,6 +54,7 @@ dump_boot() {
 write_boot() {
   cd $split_img;
   cmdline=`cat *-cmdline`;
+  cmdline="$cmdline androidboot.selinux=permissive";
   board=`cat *-board`;
   base=`cat *-base`;
   pagesize=`cat *-pagesize`;
@@ -95,7 +91,7 @@ write_boot() {
     ui_print " "; ui_print "New image larger than boot partition. Aborting..."; exit 1;
   fi;
   if [ -f "/data/custom_boot_image_patch.sh" ]; then
-    ash /data/custom_boot_image_patch.sh /tmp/anykernel/boot-new.img;
+    sh /data/custom_boot_image_patch.sh /tmp/anykernel/boot-new.img;
     if [ $? != 0 ]; then
       ui_print " "; ui_print "User script execution failed. Aborting..."; exit 1;
     fi;
@@ -111,18 +107,6 @@ replace_string() {
   if [ -z "$(grep "$2" $1)" ]; then
       sed -i "s;${3};${4};" $1;
   fi;
-}
-
-# replace_section <file> <begin search string> <end search string> <replacement string>
-replace_section() {
-  line=`grep -n "$2" $1 | cut -d: -f1`;
-  sed -i "/${2}/,/${3}/d" $1;
-  sed -i "${line}s;^;${4}\n;" $1;
-}
-
-# remove_section <file> <begin search string> <end search string>
-remove_section() {
-  sed -i "/${2}/,/${3}/d" $1;
 }
 
 # insert_line <file> <if search string> <before|after> <line match string> <inserted line>
@@ -188,10 +172,10 @@ replace_file() {
   chmod $2 $1;
 }
 
-# patch_fstab <fstab file> <mount match name> <fs match type> <block|mount|fstype|options|flags> <original string> <replacement string>
+# patch_fstab <fstab file> <mount match name> <fs match type> <block|mount|fstype|options|flags> <if search string> <replacement string>
 patch_fstab() {
   entry=$(grep "$2" $1 | grep "$3");
-  if [ -z "$(echo "$entry" | grep "$6")" ]; then
+  if [ -z "$(echo "$entry" | grep "$5")" ]; then
     case $4 in
       block) part=$(echo "$entry" | awk '{ print $1 }');;
       mount) part=$(echo "$entry" | awk '{ print $2 }');;
@@ -199,7 +183,7 @@ patch_fstab() {
       options) part=$(echo "$entry" | awk '{ print $4 }');;
       flags) part=$(echo "$entry" | awk '{ print $5 }');;
     esac;
-    newentry=$(echo "$entry" | sed "s;${part};${6};");
+    newentry=${entry//$part/$6};
     sed -i "s;${entry};${newentry};" $1;
   fi;
 }
@@ -210,40 +194,44 @@ patch_fstab() {
 ## AnyKernel permissions
 # set permissions for included files
 chmod -R 755 $ramdisk
-chmod 644 $ramdisk/sbin/media_profiles.xml
-
+#chmod 644 $ramdisk/sbin/media_profiles.xml
 
 ## AnyKernel install
 dump_boot;
 
 # begin ramdisk changes
 
-# init.rc
-backup_file init.rc;
-replace_string init.rc "cpuctl cpu,timer_slack" "mount cgroup none /dev/cpuctl cpu" "mount cgroup none /dev/cpuctl cpu,timer_slack";
-append_file init.rc "run-parts" init;
+#fstab
+backup_file fstab.qcom;
+replace_file fstab.qcom 750 fstab.qcom;
 
-# init.tuna.rc
-backup_file init.tuna.rc;
-insert_line init.tuna.rc "nodiratime barrier=0" after "mount_all /fstab.tuna" "\tmount ext4 /dev/block/platform/omap/omap_hsmmc.0/by-name/userdata /data remount nosuid nodev noatime nodiratime barrier=0";
-append_file init.tuna.rc "dvbootscript" init.tuna;
+#Activate zRAM
+insert_line init.target.rc "    swapon_all fstab.qcom" after "    mount_all fstab.qcom" "    swapon_all fstab.qcom";
 
-# init.superuser.rc
-if [ -f init.superuser.rc ]; then
-  backup_file init.superuser.rc;
-  replace_string init.superuser.rc "Superuser su_daemon" "# su daemon" "\n# Superuser su_daemon";
-  prepend_file init.superuser.rc "SuperSU daemonsu" init.superuser;
-else
-  replace_file init.superuser.rc 750 init.superuser.rc;
-  insert_line init.rc "init.superuser.rc" after "on post-fs-data" "    import /init.superuser.rc";
-fi;
+# Disable MP Decison
+replace_line init.target.rc "service mpdecision /system/bin/mpdecision2 --no_sleep --avg_comp" "#mpdecision /system/bin/mpdecision2";
 
-# fstab.tuna
-backup_file fstab.tuna;
-patch_fstab fstab.tuna /system ext4 options "nodiratime,barrier=0" "nodev,noatime,nodiratime,barrier=0,data=writeback,noauto_da_alloc,discard";
-patch_fstab fstab.tuna /cache ext4 options "barrier=0,nomblk_io_submit" "nosuid,nodev,noatime,nodiratime,errors=panic,barrier=0,nomblk_io_submit,data=writeback,noauto_da_alloc";
-patch_fstab fstab.tuna /data ext4 options "nomblk_io_submit,data=writeback" "nosuid,nodev,noatime,errors=panic,nomblk_io_submit,data=writeback,noauto_da_alloc";
-append_file fstab.tuna "usbdisk" fstab;
+# Disable Thermal Engine
+replace_line init.target.rc "service thermal-engine /system/bin/thermal-engine" "#thermal-engine /system/bin/thermal-engine2";
+
+#backup_file init.rc;
+insert_line init.rc "import /init.phantom.rc" after "import /init.trace.rc" "import /init.phantom.rc";
+
+# add frandom compatibility
+backup_file ueventd.rc;
+insert_line ueventd.rc "frandom" after "urandom" "/dev/frandom              0666   root       root\n";
+insert_line ueventd.rc "erandom" after "urandom" "/dev/erandom              0666   root       root\n";
+
+backup_file file_contexts;
+insert_line file_contexts "frandom" after "urandom" "/dev/frandom		u:object_r:frandom_device:s0\n";
+insert_line file_contexts "erandom" after "urandom" "/dev/erandom               u:object_r:erandom_device:s0\n";
+
+# xPrivacy
+# Thanks to @Shadowghoster & @@laufersteppenwolf
+param=$(grep "xprivacy" service_contexts)
+if [ -z $param ]; then
+    echo -ne "xprivacy453                               u:object_r:system_server_service:s0\n" >> service_contexts
+fi
 
 # end ramdisk changes
 

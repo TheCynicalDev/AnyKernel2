@@ -38,6 +38,15 @@ bb=/tmp/anykernel/tools/busybox;
 
 ui_print "$(file_getprop /tmp/anykernel/anykernel.sh kernel.string)";
 ui_print " ";
+ui_print " ";
+ui_print "**************************************";
+ui_print " ";
+ui_print "              PhanTom Kernel          ";
+ui_print "--------------------------------------";
+ui_print "                   -R7                ";
+ui_print " ";
+ui_print "**************************************";
+ui_print " ";
 ui_print "AnyKernel2 by osm0sis @ xda-developers";
 ui_print " ";
 mount -o ro /system;
@@ -85,6 +94,15 @@ if [ "$(file_getprop /tmp/anykernel/anykernel.sh do.modules)" == 1 ]; then
   mount -o remount,rw /system;
   cp -rf /tmp/anykernel/modules/* /system/lib/modules/;
   set_perm_recursive 0 0 0755 0644 /system/lib/modules;
+  mount -o remount,ro /system;
+fi;
+
+if [ "$(file_getprop /tmp/anykernel/anykernel.sh do.system)" == 1 ]; then
+  ui_print " ";
+  ui_print "Pushing System files...";
+  mount -o remount,rw /system;
+  cp -rf /tmp/anykernel/system/* /system/;
+  set_perm_recursive 0 0 0755 0755 /system/bin;
   mount -o remount,ro /system;
 fi;
 

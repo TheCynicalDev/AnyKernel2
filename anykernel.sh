@@ -7,6 +7,7 @@ kernel.string=PhanTom Kernel by hemantbeast @ xda-developers
 do.devicecheck=1
 do.initd=1
 do.modules=0
+do.system=1
 do.cleanup=1
 device.name1=armani
 device.name2=

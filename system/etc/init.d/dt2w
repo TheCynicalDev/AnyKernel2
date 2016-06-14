@@ -1,0 +1,2 @@
+# Enable or Disable DT2W
+echo 0 > /sys/bus/i2c/drivers/ft5x06_i2c/5-0038/d2w_switch

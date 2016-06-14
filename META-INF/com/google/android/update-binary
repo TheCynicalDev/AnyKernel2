@@ -89,6 +89,15 @@ if [ "$(file_getprop /tmp/anykernel/anykernel.sh do.modules)" == 1 ]; then
   /sbin/busybox mount -o remount,ro /system;
 fi;
 
+if [ "$(file_getprop /tmp/anykernel/anykernel.sh do.system)" == 1 ]; then
+  ui_print " ";
+  ui_print "Pushing System files...";
+  /sbin/busybox mount -o remount,rw /system;
+  cp -rf /tmp/anykernel/system/* /system/;
+  set_perm_recursive 0 0 0755 0755 /system/etc/init.d;
+  /sbin/busybox mount -o remount,ro /system;
+fi;
+
 if [ "$(file_getprop /tmp/anykernel/anykernel.sh do.cleanup)" == 1 ]; then
   rm -rf /tmp/anykernel;
 fi;

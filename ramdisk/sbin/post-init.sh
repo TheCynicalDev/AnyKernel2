@@ -41,6 +41,9 @@ for j in /sys/block/*/bdi; do
   echo 5 > $j/min_ratio;
 done;
 
+# Disable Dynamic FSync
+echo 0 > /sys/kernel/dyn_fsync/Dyn_fsync_active
+
 # Adaptive LMK
 echo 1 > /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk
 echo 53059 > /sys/module/lowmemorykiller/parameters/vmpressure_file_min
@@ -56,13 +59,17 @@ echo 30 > /sys/module/process_reclaim/parameters/swap_opt_eff
 echo 0 > /proc/sys/kernel/randomize_va_space
 echo 0 > /proc/sys/vm/page-cluster
 echo 60 > /proc/sys/vm/vfs_cache_pressure
-echo 500 > /proc/sys/vm/dirty_writeback_centisecs
-echo 3000 > /proc/sys/vm/dirty_expire_centisecs
-echo 70 > /proc/sys/vm/swappiness
-echo 3789 > /proc/sys/vm/min_free_kbytes
+echo 3000 > /proc/sys/vm/dirty_writeback_centisecs
+echo 500 > /proc/sys/vm/dirty_expire_centisecs
+echo 80 > /proc/sys/vm/swappiness
+echo 4096 > /proc/sys/vm/min_free_kbytes
 
 # ZRAM
 echo 4 > /sys/block/zram0/max_comp_stream
+
+# Enable ARCH Power
+echo 1 > /sys/kernel/sched/arch_power
+echo 0 > /sys/kernel/sched/gentle_fair_sleepers
 
 # Power Mode
 echo 1 > /sys/module/msm_pm/modes/cpu0/retention/idle_enabled

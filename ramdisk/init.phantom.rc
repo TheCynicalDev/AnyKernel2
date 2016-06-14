@@ -12,53 +12,63 @@ on property:sys.boot_completed=1
     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor ondemand
     write /sys/devices/system/cpu/cpufreq/ondemand/up_threshold 95
     write /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate 50000
-    write /sys/devices/system/cpu/cpufreq/ondemand/sampling_down_factor 4
+    write /sys/devices/system/cpu/cpufreq/ondemand/sampling_down_factor 1
     write /sys/devices/system/cpu/cpufreq/ondemand/up_threshold_multi_core 75
     write /sys/devices/system/cpu/cpufreq/ondemand/optimal_freq 998400
-    write /sys/devices/system/cpu/cpufreq/ondemand/sync_freq 787200
+    write /sys/devices/system/cpu/cpufreq/ondemand/optimal_max_freq 1190400
+    write /sys/devices/system/cpu/cpufreq/ondemand/sync_freq 600000
     write /sys/devices/system/cpu/cpufreq/ondemand/up_threshold_any_cpu_load 85
     restorecon_recursive /sys/devices/system/cpu/cpufreq/ondemand
 
     # impulse
     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor "impulse"
-    write /sys/devices/system/cpu/cpufreq/impulse/above_hispeed_delay "20000 800000:40000 1000000:20000"
+    write /sys/devices/system/cpu/cpufreq/impulse/above_hispeed_delay "20000 384000:60000 998400:40000"
     write /sys/devices/system/cpu/cpufreq/impulse/go_hispeed_load 95
     write /sys/devices/system/cpu/cpufreq/impulse/hispeed_freq 1094400
-    write /sys/devices/system/cpu/cpufreq/impulse/target_loads "85 700000:90 900000:70"
+    write /sys/devices/system/cpu/cpufreq/impulse/target_loads "85 787200:70 998400:80 1190400:60 1401600:50"
     write /sys/devices/system/cpu/cpufreq/impulse/min_sample_time 40000
     write /sys/devices/system/cpu/cpufreq/impulse/timer_rate 30000
     write /sys/devices/system/cpu/cpufreq/impulse/max_freq_hysteresis 100000
     write /sys/devices/system/cpu/cpufreq/impulse/timer_slack 30000
     restorecon_recursive /sys/devices/system/cpu/cpufreq/impluse
 
-    # interactive
-    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor interactive
-    write /sys/devices/system/cpu/cpufreq/interactive/above_hispeed_delay "20000 1000000:40000 1200000:20000"
-    write /sys/devices/system/cpu/cpufreq/interactive/go_hispeed_load 90
-    write /sys/devices/system/cpu/cpufreq/interactive/hispeed_freq 787200
-    write /sys/devices/system/cpu/cpufreq/interactive/io_is_busy 0
-    write /sys/devices/system/cpu/cpufreq/interactive/target_loads "85 1100000:90 1300000:70"
-    write /sys/devices/system/cpu/cpufreq/interactive/min_sample_time 40000
-    write /sys/devices/system/cpu/cpufreq/interactive/timer_rate 30000
-    write /sys/devices/system/cpu/cpufreq/interactive/sampling_down_factor 100000
-    write /sys/devices/system/cpu/cpufreq/interactive/timer_slack 30000
-    restorecon_recursive /sys/devices/system/cpu/cpufreq/interactive
+    # intellidemand
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor intellidemand
+    write /sys/devices/system/cpu/cpufreq/intellidemand/optimal_freq 600000
+    write /sys/devices/system/cpu/cpufreq/intellidemand/sampling_rate 40000
+    write /sys/devices/system/cpu/cpufreq/intellidemand/two_phase_freq "998400,998400,998400,998400"
 
     # yankdemand
     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor yankdemand
-    write /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor yankdemand
-    write /sys/devices/system/cpu/cpu2/cpufreq/scaling_governor yankdemand
-    write /sys/devices/system/cpu/cpu3/cpufreq/scaling_governor yankdemand
     write /sys/devices/system/cpu/cpufreq/yankdemand/optimal_freq 787200
     write /sys/devices/system/cpu/cpufreq/yankdemand/sampling_rate 40000
     write /sys/devices/system/cpu/cpufreq/yankdemand/smart_high_slow_up_freq 1401600
     write /sys/devices/system/cpu/cpufreq/yankdemand/smart_slow_up_freq 998400
     write /sys/devices/system/cpu/cpufreq/yankdemand/step_up_early_hispeed 1190400
     write /sys/devices/system/cpu/cpufreq/yankdemand/step_up_interim_hispeed 1401600
+    write /sys/devices/system/cpu/cpufreq/yankdemand/sync_freq 600000
     restorecon_recursive /sys/devices/system/cpu/cpufreq/yankdemand
+
+    # interactive
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor interactive
+    write /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor interactive
+    write /sys/devices/system/cpu/cpu2/cpufreq/scaling_governor interactive
+    write /sys/devices/system/cpu/cpu3/cpufreq/scaling_governor interactive
+    write /sys/devices/system/cpu/cpufreq/interactive/above_hispeed_delay "20000 384000:60000 998400:40000"
+    write /sys/devices/system/cpu/cpufreq/interactive/boostpulse_duration 80000
+    write /sys/devices/system/cpu/cpufreq/interactive/go_hispeed_load 90
+    write /sys/devices/system/cpu/cpufreq/interactive/hispeed_freq 600000
+    write /sys/devices/system/cpu/cpufreq/interactive/target_loads "85 787200:70 998400:80 1190400:60 1401600:50"
+    write /sys/devices/system/cpu/cpufreq/interactive/max_freq_hysteresis 60000
+    write /sys/devices/system/cpu/cpufreq/interactive/min_sample_time 40000
+    write /sys/devices/system/cpu/cpufreq/interactive/timer_rate 30000
+    write /sys/devices/system/cpu/cpufreq/interactive/sampling_down_factor 100000
+    write /sys/devices/system/cpu/cpufreq/interactive/timer_slack 30000
+    restorecon_recursive /sys/devices/system/cpu/cpufreq/interactive
 
     # enable hotplug control
     write /sys/module/msm_hotplug/msm_enabled 1
+    write /sys/module/msm_hotplug/max_cpus_online_susp 2
     write /sys/module/msm_hotplug/min_cpus_online 1
     write /sys/module/msm_hotplug/down_lock_duration 500
     write /sys/module/msm_hotplug/boost_lock_duration 2500

@@ -3,7 +3,7 @@
 
 ## AnyKernel setup
 # EDIFY properties
-kernel.string=PhanTom Kernel by hemantbeast @ xda-developers
+kernel.string=Aurora Kernel by malvigagan @ xda-developers
 do.devicecheck=1
 do.initd=1
 do.modules=0

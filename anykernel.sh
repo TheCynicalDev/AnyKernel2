@@ -3,7 +3,7 @@
 
 ## AnyKernel setup
 # EDIFY properties
-kernel.string=PhanTom Kernel by hemantbeast @ xda-developers
+kernel.string=Aurora by MalviGagan @ xda-developers
 do.devicecheck=1
 do.initd=1
 do.modules=0
@@ -60,7 +60,7 @@ dump_boot() {
 write_boot() {
   cd $split_img;
   cmdline=`cat *-cmdline`;
-  cmdline="$cmdline androidboot.selinux=permissive";
+  cmdline="$cmdline";
   board=`cat *-board`;
   base=`cat *-base`;
   pagesize=`cat *-pagesize`;
